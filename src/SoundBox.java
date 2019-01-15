@@ -21,9 +21,10 @@ public class SoundBox {
             "Open Hi-Hat","Acoustic Snare", "Crash Cymbal", "Hand Clap",
             "High Tom", "Hi Bongo", "Maracas", "Whistle", "Low Conga",
             "Cowbell", "Vibraslap", "Low-mid Tom", "High Agogo",
-            "Open Hi Conga"};
-    private int[] instruments = {35,42,46,38,49,39,50,60,70,72,64,56,58,47,67,63};
-    private TempoDial tempoDial = new TempoDial();
+            "Open Hi Conga", "Open Hi Conga"};
+    private int[] instruments = {35,42,46,38,49,39,50,60,70,72,64,56,58,47,67,63,63};
+    private float nombreBpm = 120;
+    private JLabel jLabelBpm = new JLabel(Float.toString(nombreBpm));
 
     SoundBox() {
 
@@ -32,6 +33,20 @@ public class SoundBox {
         BorderLayout layout = new BorderLayout();
         JPanel background = new JPanel(layout);
         background.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu menuFile = (JMenu) menuBar.add(new JMenu("File"));
+        JMenuItem itemExit = (JMenuItem) menuFile.add(new JMenuItem("Exit"));
+        itemExit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) { System.exit(0); }
+        });
+
+        JMenu menuOption = (JMenu) menuBar.add(new JMenu("Options"));
+        JMenuItem itemClear = (JMenuItem) menuOption.add(new JMenuItem("Clear Boxes"));
+        itemClear.addActionListener(new ButtonClearBoxesListener());
+
+        background.add(menuBar, BorderLayout.NORTH);
 
         checkBoxList = new ArrayList<JCheckBox>();
         Box controlBox = new Box(BoxLayout.Y_AXIS);
@@ -48,10 +63,21 @@ public class SoundBox {
         jButtonClearBoxes.addActionListener(new ButtonClearBoxesListener());
         controlBox.add(jButtonClearBoxes);
 
-        controlBox.add(tempoDial);
+        controlBox.add(new JLabel("Tempo BPM:"));
+
+        controlBox.add(jLabelBpm);
+
+
+        JButton jButtonTempoUp = new JButton("Tempo Up");
+        jButtonTempoUp.addActionListener(new jButtonTempoUpListener());
+        controlBox.add(jButtonTempoUp);
+
+        JButton jButtonTempoDown = new JButton("Tempo Down");
+        jButtonTempoDown.addActionListener(new jButtonTempoDownListener());
+        controlBox.add(jButtonTempoDown);
 
         Box box = new Box(BoxLayout.Y_AXIS);
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 17; i++) {
             box.add(new Label(instrumentsNames[i]));
         }
 
@@ -60,13 +86,13 @@ public class SoundBox {
 
         jFrame.getContentPane().add(background);
 
-        GridLayout grid = new GridLayout(16,16);
+        GridLayout grid = new GridLayout(17,16);
         grid.setVgap(1);
         grid.setHgap(1);
         jPanel = new JPanel(grid);
         background.add(BorderLayout.CENTER, jPanel);
 
-        for (int i = 0; i < 256; i++) {
+        for (int i = 0; i < 272; i++) {
             JCheckBox c = new JCheckBox();
             c.setSelected(false);
             checkBoxList.add(c);
@@ -86,8 +112,8 @@ public class SoundBox {
             sequencer.open();
             sequence = new Sequence(Sequence.PPQ,4);
             track = sequence.createTrack();
-            tempoDial.setSequencer(sequencer);
-            sequencer.setTempoInBPM(tempoDial.getTempo());
+
+            sequencer.setTempoInBPM(nombreBpm);
 
         } catch(Exception e) {e.printStackTrace();}
     }
@@ -114,6 +140,22 @@ public class SoundBox {
         }
     }
 
+    public class jButtonTempoUpListener implements ActionListener {
+        public void actionPerformed(ActionEvent a) {
+            nombreBpm += 5;
+            jLabelBpm.setText(Float.toString(nombreBpm));
+            sequencer.setTempoInBPM(nombreBpm);
+        }
+    }
+
+    public class jButtonTempoDownListener implements ActionListener {
+        public void actionPerformed(ActionEvent a) {
+            nombreBpm -= 5;
+            jLabelBpm.setText(Float.toString(nombreBpm));
+            sequencer.setTempoInBPM(nombreBpm);
+        }
+    }
+
     public void buildTrackAndStart() {
         int[] trackList;
 
@@ -126,7 +168,7 @@ public class SoundBox {
         sequence.deleteTrack(track);
         track = sequence.createTrack();
 
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 17; i++) {
             trackList = new int[16];
 
             int key = instruments[i];
@@ -149,7 +191,7 @@ public class SoundBox {
             sequencer.setLoopCount(sequencer.LOOP_CONTINUOUSLY);
 
             sequencer.start();
-            sequencer.setTempoInBPM(tempoDial.getTempo());
+            sequencer.setTempoInBPM(nombreBpm);
         } catch(Exception e) {e.printStackTrace();}
     }
 
