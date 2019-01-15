@@ -17,14 +17,16 @@ public class SoundBox {
     private Sequence sequence;
     private Track track;
     private JFrame jFrame;
-    private String[] instrumentNames = {"Bass Drum", "Closed Hi-Hat",
+    private String[] instrumentsNames = {"Bass Drum", "Closed Hi-Hat",
             "Open Hi-Hat","Acoustic Snare", "Crash Cymbal", "Hand Clap",
             "High Tom", "Hi Bongo", "Maracas", "Whistle", "Low Conga",
             "Cowbell", "Vibraslap", "Low-mid Tom", "High Agogo",
             "Open Hi Conga"};
     private int[] instruments = {35,42,46,38,49,39,50,60,70,72,64,56,58,47,67,63};
+    private TempoDial tempoDial = new TempoDial();
 
     SoundBox() {
+
         jFrame = new JFrame("BeatBox");
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         BorderLayout layout = new BorderLayout();
@@ -42,17 +44,16 @@ public class SoundBox {
         jButtonStop.addActionListener(new ButtonStopListener());
         buttonBox.add(jButtonStop);
 
-        JButton jButtonUpTempo = new JButton("Tempo Up");
-        jButtonUpTempo.addActionListener(new ButtonUpTempoListener());
-        buttonBox.add(jButtonUpTempo);
+        buttonBox.add(tempoDial);
 
-        JButton jButtonDownTempo = new JButton("Tempo Down");
-        jButtonDownTempo.addActionListener(new ButtonDownTempoListener());
-        buttonBox.add(jButtonDownTempo);
+
+        JButton jButtonClearBoxes = new JButton("Clear Boxes");
+        jButtonClearBoxes.addActionListener(new ButtonClearBoxesListener());
+        buttonBox.add(jButtonClearBoxes);
 
         Box box = new Box(BoxLayout.Y_AXIS);
         for (int i = 0; i < 16; i++) {
-            box.add(new Label(instrumentNames[i]));
+            box.add(new Label(instrumentsNames[i]));
         }
 
         background.add(BorderLayout.EAST, buttonBox);
@@ -75,7 +76,6 @@ public class SoundBox {
 
         setUpMidi();
 
-        //jFrame.setBounds(50,50,900,300);
         jFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         jFrame.pack();
         jFrame.setVisible(true);
@@ -87,13 +87,15 @@ public class SoundBox {
             sequencer.open();
             sequence = new Sequence(Sequence.PPQ,4);
             track = sequence.createTrack();
-            sequencer.setTempoInBPM(120);
+            tempoDial.setSequencer(sequencer);
+            sequencer.setTempoInBPM(tempoDial.getTempo());
 
         } catch(Exception e) {e.printStackTrace();}
     }
 
     public class ButtonStartListener implements ActionListener {
         public void actionPerformed(ActionEvent a) {
+            sequencer.stop();
             buildTrackAndStart();
         }
     }
@@ -104,23 +106,24 @@ public class SoundBox {
         }
     }
 
-    public class ButtonUpTempoListener implements ActionListener {
+    public class ButtonClearBoxesListener implements ActionListener {
         public void actionPerformed(ActionEvent a) {
-            float tempoFactor = sequencer.getTempoFactor();
-            sequencer.setTempoFactor((float)(tempoFactor * 1.03));
-        }
-    }
-
-    public class ButtonDownTempoListener implements ActionListener {
-        public void actionPerformed(ActionEvent a) {
-            float tempoFactor = sequencer.getTempoFactor();
-            sequencer.setTempoFactor((float)(tempoFactor * .97));
+            for(JCheckBox c : checkBoxList)
+            {
+                c.setSelected(false);
+            }
         }
     }
 
     public void buildTrackAndStart() {
         int[] trackList;
 
+        sequence = null;
+        try {
+            sequence = new Sequence(Sequence.PPQ,4);
+        } catch (InvalidMidiDataException e) {
+            e.printStackTrace();
+        }
         sequence.deleteTrack(track);
         track = sequence.createTrack();
 
@@ -145,8 +148,9 @@ public class SoundBox {
         try {
             sequencer.setSequence(sequence);
             sequencer.setLoopCount(sequencer.LOOP_CONTINUOUSLY);
+
             sequencer.start();
-            sequencer.setTempoInBPM(120);
+            sequencer.setTempoInBPM(tempoDial.getTempo());
         } catch(Exception e) {e.printStackTrace();}
     }
 
