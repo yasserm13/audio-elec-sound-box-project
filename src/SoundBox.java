@@ -34,29 +34,28 @@ public class SoundBox {
         background.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
         checkBoxList = new ArrayList<JCheckBox>();
-        Box buttonBox = new Box(BoxLayout.Y_AXIS);
+        Box controlBox = new Box(BoxLayout.Y_AXIS);
 
         JButton jButtonStart = new JButton("Start");
         jButtonStart.addActionListener(new ButtonStartListener());
-        buttonBox.add(jButtonStart);
+        controlBox.add(jButtonStart);
 
         JButton jButtonStop = new JButton("Stop");
         jButtonStop.addActionListener(new ButtonStopListener());
-        buttonBox.add(jButtonStop);
-
-        buttonBox.add(tempoDial);
-
+        controlBox.add(jButtonStop);
 
         JButton jButtonClearBoxes = new JButton("Clear Boxes");
         jButtonClearBoxes.addActionListener(new ButtonClearBoxesListener());
-        buttonBox.add(jButtonClearBoxes);
+        controlBox.add(jButtonClearBoxes);
+
+        controlBox.add(tempoDial);
 
         Box box = new Box(BoxLayout.Y_AXIS);
         for (int i = 0; i < 16; i++) {
             box.add(new Label(instrumentsNames[i]));
         }
 
-        background.add(BorderLayout.EAST, buttonBox);
+        background.add(BorderLayout.EAST, controlBox);
         background.add(BorderLayout.WEST, box);
 
         jFrame.getContentPane().add(background);
