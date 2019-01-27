@@ -8,10 +8,13 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TableModelEvent;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Vector;
 
 public class SoundBox {
 
@@ -25,14 +28,17 @@ public class SoundBox {
             "Open Hi-Hat","Acoustic Snare", "Crash Cymbal", "Hand Clap",
             "High Tom", "Hi Bongo", "Maracas", "Whistle", "Low Conga",
             "Cowbell", "Vibraslap", "Low-mid Tom", "High Agogo",
-            "Open Hi Conga", "Open Hi Conga"};
+            "Open Hi Conga", "Customized sound"};
     private int[] instruments = {35,42,46,38,49,39,50,60,70,72,64,56,58,47,67,63,63};
     private float nombreBpm = 120;
     JSlider jSliderBpm;
+    JButton jButtonStart = new JButton("Start");
+    JComboBox jComboBox;
+    Vector data = new Vector(instrumentsNames.length);
 
     SoundBox() {
 
-        jFrame = new JFrame("BeatBox");
+        jFrame = new JFrame("AudioElecBeatBox");
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         BorderLayout layout = new BorderLayout();
         JPanel background = new JPanel(layout);
@@ -55,7 +61,7 @@ public class SoundBox {
         checkBoxList = new ArrayList<JCheckBox>();
         Box controlBox = new Box(BoxLayout.Y_AXIS);
 
-        JButton jButtonStart = new JButton("Start");
+       // JButton jButtonStart = new JButton("Start");
         jButtonStart.addActionListener(new ButtonStartListener());
         controlBox.add(jButtonStart);
 
@@ -86,15 +92,21 @@ public class SoundBox {
         //Ajout du slider en dessous
         controlBox.add(jSliderBpm);
 
-
-        JButton jButtonTempoUp = new JButton("Tempo Up: +5 bpm");
-        jButtonTempoUp.addActionListener(new jButtonTempoUpListener());
+        JButton jButtonTempoUp = new JButton("Tempo Up (+5 bpm)");
+        jButtonTempoUp.addActionListener(new ButtonTempoUpListener());
         controlBox.add(jButtonTempoUp);
 
-        JButton jButtonTempoDown = new JButton("Tempo Down -5 bpm");
-        jButtonTempoDown.addActionListener(new jButtonTempoDownListener());
+        JButton jButtonTempoDown = new JButton("Tempo Down (-5 bpm)");
+        jButtonTempoDown.addActionListener(new ButtonTempoDownListener());
         controlBox.add(jButtonTempoDown);
-
+        
+        //Ajout du choix des beats pré-enregistré ()
+        jComboBox = new JComboBox();
+        jComboBox.addItem("Rock Beat 1");
+        jComboBox.addItem("Rock Beat 2");
+        jComboBox.addItem("Rock Beat 3");
+        jComboBox.addActionListener(new ButtonPresetTracks());
+        controlBox.add(jComboBox);
 
         Box box = new Box(BoxLayout.Y_AXIS);
         for (int i = 0; i < 17; i++) {
@@ -153,14 +165,18 @@ public class SoundBox {
 
     public class ButtonClearBoxesListener implements ActionListener {
         public void actionPerformed(ActionEvent a) {
-            for(JCheckBox c : checkBoxList)
-            {
-                c.setSelected(false);
-            }
+        	clearBoxes();
         }
     }
-
-    public class jButtonTempoUpListener implements ActionListener {
+    
+    public void clearBoxes() {
+    	for(JCheckBox c : checkBoxList)
+        {
+            c.setSelected(false);
+        }
+    }
+    
+    public class ButtonTempoUpListener implements ActionListener {
         public void actionPerformed(ActionEvent a) {
             nombreBpm += 5;
             sequencer.setTempoInBPM(nombreBpm);
@@ -172,7 +188,7 @@ public class SoundBox {
         }
     }
 
-    public class jButtonTempoDownListener implements ActionListener {
+    public class ButtonTempoDownListener implements ActionListener {
         public void actionPerformed(ActionEvent a) {
             nombreBpm -= 5;
             sequencer.setTempoInBPM(nombreBpm);
@@ -183,6 +199,127 @@ public class SoundBox {
             jSliderBpm.setBorder(tb);
             jSliderBpm.setValue((int) nombreBpm);
         }
+    }
+    
+    public class ButtonPresetTracks implements ActionListener {
+        public void actionPerformed(ActionEvent a) {
+	    	Object object = a.getSource();	    	 
+    	 	if (object instanceof JComboBox) {
+    	 		presetTracks(((JComboBox) object).getSelectedIndex());
+    	 		buildTrackAndStart();	
+    	 		if (jButtonStart.getText().startsWith("Stop")) {
+	                 sequencer.stop();	                
+	                 buildTrackAndStart();
+	             }
+	         }
+        }
+    }
+    
+    /**
+     * Storage class for instrument and musical staff represented by ticked box.
+     */
+    class Data extends Object {
+        String name; 
+        int id; 
+        //Color staff[] = new Color[16];
+        //ArrayList<JCheckBox> staff = new ArrayList<JCheckBox>(16);
+        public Data(String name, int id) {
+            this.name = name;
+            this.id = id;
+            for (int i = 0; i < checkBoxList.size(); i++) {
+                //staff[i] = Color.white;
+            	checkBoxList.get(i).setSelected(false);
+            }
+        }
+    }
+    
+    private void setCell(int id, int tick) {
+        for (int i = 0; i < data.size(); i++) {
+            Data d = (Data) data.get(i);
+            if (d.id == id) {
+                //d.staff.get(tick).setSelected(true);
+            	checkBoxList.get(tick).setSelected(true);
+                break;
+            }
+        }
+    }
+    /*
+    private void setCell(int id, int tick) {
+    	int[] trackList = new int[16];
+        for (int i = 0; i < checkBoxList.size(); i++) {
+        	// Data d = (Data) data.get(i);        	        	
+        	checkBoxList.get(i);
+        	int key = instruments[i];
+            if (key == id) {
+            	//d.staff[tick] = Color.black;
+            	//checkBoxList.get(tick).isSelected();
+                checkBoxList.get(tick).setSelected(true);                            
+                break;
+            }
+        }
+    }*/
+    
+    private void presetTracks(int num) {
+
+        final int ACOUSTIC_BASS = 35;
+        final int ACOUSTIC_SNARE = 38;
+        final int HAND_CLAP = 39;
+        final int PEDAL_HIHAT = 44;
+        final int LO_TOM = 45;
+        final int CLOSED_HIHAT = 42;
+        final int CRASH_CYMBAL1 = 49;
+        final int HI_TOM = 50;
+        final int RIDE_BELL = 53;
+
+        clearBoxes();
+
+        switch (num) {
+            case 0 : for (int i = 0; i < 16; i+=2) {      	
+				 setCell(CLOSED_HIHAT, i); 
+		         }
+		         setCell(ACOUSTIC_SNARE, 4);
+		         setCell(ACOUSTIC_SNARE, 12);
+		         int bass1[] = { 0, 3, 6, 8 };
+		         for (int i = 0; i < bass1.length; i++) {
+		             setCell(ACOUSTIC_BASS, bass1[i]); 
+		         }
+		         break;
+            case 1 : for (int i = 0; i < 16; i+=4) {
+                         setCell(CRASH_CYMBAL1, i); 
+                     }
+                     for (int i = 0; i < 16; i+=2) {
+                         setCell(PEDAL_HIHAT, i); 
+                     }
+                     setCell(ACOUSTIC_SNARE, 4);
+                     setCell(ACOUSTIC_SNARE, 12);
+                     int bass2[] = { 0, 2, 3, 7, 9, 10, 15 };
+                     for (int i = 0; i < bass2.length; i++) {
+                         setCell(ACOUSTIC_BASS, bass2[i]); 
+                     }
+                     break;
+            case 2 : for (int i = 0; i < 16; i+=4) {
+                         setCell(RIDE_BELL, i); 
+                     }
+                     for (int i = 2; i < 16; i+=4) {
+                         setCell(PEDAL_HIHAT, i); 
+                     }
+                     setCell(HAND_CLAP, 4);
+                     setCell(HAND_CLAP, 12);
+                     setCell(HI_TOM, 13);
+                     setCell(LO_TOM, 14);
+                     int bass3[] = { 0, 3, 6, 9, 15 };
+                     for (int i = 0; i < bass3.length; i++) {
+                         setCell(ACOUSTIC_BASS+1, bass3[i]); 
+                     }
+                     break;
+            default :
+        }
+        /*
+        int[] trackList = new int[16];
+        makeTracks(trackList);
+        track.add(makeEvent(176,1,127,0,16));
+        */
+        //table.tableChanged(new TableModelEvent(dataModel));
     }
 
     public void buildTrackAndStart() {
