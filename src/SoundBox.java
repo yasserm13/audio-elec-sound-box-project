@@ -4,6 +4,10 @@
 
 import javax.sound.midi.*;
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,7 +28,7 @@ public class SoundBox {
             "Open Hi Conga", "Open Hi Conga"};
     private int[] instruments = {35,42,46,38,49,39,50,60,70,72,64,56,58,47,67,63,63};
     private float nombreBpm = 120;
-    private JLabel jLabelBpm = new JLabel(Float.toString(nombreBpm));
+    JSlider jSliderBpm;
 
     SoundBox() {
 
@@ -63,18 +67,34 @@ public class SoundBox {
         jButtonClearBoxes.addActionListener(new ButtonClearBoxesListener());
         controlBox.add(jButtonClearBoxes);
 
-        controlBox.add(new JLabel("Tempo BPM:"));
+        //Déclaration JSlider
+        jSliderBpm = new JSlider(40,160,(int) nombreBpm);
+        //Set le titre
+        TitledBorder tb = new TitledBorder(new EtchedBorder());
+        tb.setTitle("Tempo BPM =" + jSliderBpm.getValue());
+        jSliderBpm.setBorder(tb);
+        //Action qui sera executé lors du déplacement du slider
+        jSliderBpm.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                nombreBpm = jSliderBpm.getValue();
 
-        controlBox.add(jLabelBpm);
+                TitledBorder tb = new TitledBorder(new EtchedBorder());
+                tb.setTitle("Tempo BPM =" + jSliderBpm.getValue());
+                jSliderBpm.setBorder(tb);
+            }
+        });
+        //Ajout du slider en dessous
+        controlBox.add(jSliderBpm);
 
 
-        JButton jButtonTempoUp = new JButton("Tempo Up");
+        JButton jButtonTempoUp = new JButton("Tempo Up: +5 bpm");
         jButtonTempoUp.addActionListener(new jButtonTempoUpListener());
         controlBox.add(jButtonTempoUp);
 
-        JButton jButtonTempoDown = new JButton("Tempo Down");
+        JButton jButtonTempoDown = new JButton("Tempo Down -5 bpm");
         jButtonTempoDown.addActionListener(new jButtonTempoDownListener());
         controlBox.add(jButtonTempoDown);
+
 
         Box box = new Box(BoxLayout.Y_AXIS);
         for (int i = 0; i < 17; i++) {
@@ -143,16 +163,25 @@ public class SoundBox {
     public class jButtonTempoUpListener implements ActionListener {
         public void actionPerformed(ActionEvent a) {
             nombreBpm += 5;
-            jLabelBpm.setText(Float.toString(nombreBpm));
             sequencer.setTempoInBPM(nombreBpm);
+
+            TitledBorder tb = new TitledBorder(new EtchedBorder());
+            tb.setTitle("Tempo BPM =" + jSliderBpm.getValue());
+            jSliderBpm.setBorder(tb);
+            jSliderBpm.setValue((int) nombreBpm);
         }
     }
 
     public class jButtonTempoDownListener implements ActionListener {
         public void actionPerformed(ActionEvent a) {
             nombreBpm -= 5;
-            jLabelBpm.setText(Float.toString(nombreBpm));
             sequencer.setTempoInBPM(nombreBpm);
+
+
+            TitledBorder tb = new TitledBorder(new EtchedBorder());
+            tb.setTitle("Tempo BPM =" + jSliderBpm.getValue());
+            jSliderBpm.setBorder(tb);
+            jSliderBpm.setValue((int) nombreBpm);
         }
     }
 
