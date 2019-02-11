@@ -3,6 +3,8 @@
  */
 
 import javax.sound.midi.*;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
@@ -11,6 +13,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 
 public class SoundBox {
@@ -25,9 +28,13 @@ public class SoundBox {
             "Open Hi-Hat","Acoustic Snare", "Crash Cymbal", "Hand Clap",
             "High Tom", "Hi Bongo", "Maracas", "Whistle", "Low Conga",
             "Cowbell", "Vibraslap", "Low-mid Tom", "High Agogo",
-            "Open Hi Conga", "Open Hi Conga"};
+            "Open Hi Conga"};
     private int[] instruments = {35,42,46,38,49,39,50,60,70,72,64,56,58,47,67,63,63};
     private float nombreBpm = 120;
+    public File soundFile = null;
+
+    AudioInputStream audioInputStream;
+    String fileName = "untitled";
     JSlider jSliderBpm;
 
     SoundBox() {
@@ -95,11 +102,14 @@ public class SoundBox {
         jButtonTempoDown.addActionListener(new jButtonTempoDownListener());
         controlBox.add(jButtonTempoDown);
 
+        JButton jButtonLoadSound = new JButton("Load sound");
+        jButtonLoadSound.addActionListener(new jButtonLoadSoundListener());
 
         Box box = new Box(BoxLayout.Y_AXIS);
-        for (int i = 0; i < 17; i++) {
+        for (int i = 0; i < 16; i++) {
             box.add(new Label(instrumentsNames[i]));
         }
+        box.add(jButtonLoadSound);
 
         background.add(BorderLayout.EAST, controlBox);
         background.add(BorderLayout.WEST, box);
@@ -136,6 +146,53 @@ public class SoundBox {
             sequencer.setTempoInBPM(nombreBpm);
 
         } catch(Exception e) {e.printStackTrace();}
+    }
+
+    public class jButtonLoadSoundListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {}
+            /*try {
+                File file = new File(System.getProperty("user.dir"));
+                JFileChooser fc = new JFileChooser(file);
+                fc.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                    public boolean accept(File f) {
+                        if (f.isDirectory()) {
+                            return true;
+                        }
+                        String name = f.getName();
+                        if (name.endsWith(".au") || name.endsWith(".wav") || name.endsWith(".aiff") || name.endsWith(".aif")) {
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    public String getDescription() {
+                        return ".au, .wav, .aif";
+                    }
+                });
+
+                if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    createAudioInputStream(fc.getSelectedFile(), true);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        public void createAudioInputStream(File file, boolean updateComponents) {
+            if (file != null && file.isFile()) {
+                try {
+                    soundFile = file;
+                    audioInputStream = AudioSystem.getAudioInputStream(file);
+                    fileName = file.getName();
+                    long milliseconds = (long)((audioInputStream.getFrameLength() * 1000) / audioInputStream.getFormat().getFrameRate());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            } else {
+                System.out.println("Audio file required.");
+            }
+        }*/
     }
 
     public class ButtonStartListener implements ActionListener {
