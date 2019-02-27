@@ -150,8 +150,8 @@ public class SoundBox {
 
     public class jButtonLoadSoundListener implements ActionListener {
         @Override
-        public void actionPerformed(ActionEvent e) {}
-            /*try {
+        public void actionPerformed(ActionEvent e) {
+            try {
                 File file = new File(System.getProperty("user.dir"));
                 JFileChooser fc = new JFileChooser(file);
                 fc.setFileFilter(new javax.swing.filechooser.FileFilter() {
@@ -192,7 +192,7 @@ public class SoundBox {
             } else {
                 System.out.println("Audio file required.");
             }
-        }*/
+        }
     }
 
     public class ButtonStartListener implements ActionListener {
